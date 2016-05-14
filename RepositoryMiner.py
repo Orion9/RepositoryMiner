@@ -1,8 +1,11 @@
 import requests
 import json
 from datetime import datetime
+from dateutil import parser
 import matplotlib.pyplot as plt
 import numpy as np
+import locale
+
 
 # TODO Delete debug alerts
 
@@ -40,7 +43,9 @@ def main():
     j = len(developers)
 
     dev_matrix = np.zeros((i, j))
+    # DEBUG ALERT #
     debug_list = list()
+
     for json_data in data_json["log"]:
         commit_url = init_commit_url + json_data["commit"]
         commit_param = dict(
@@ -50,7 +55,7 @@ def main():
         commit_response = requests.get(commit_url, commit_param)
         commit_data_json = json.loads(commit_response.text.replace(")]}'\n", ""))
 
-        date_obj = datetime.strptime(commit_data_json["author"]["time"], "%c")
+        date_obj = parser.parse(commit_data_json["author"]["time"])
         commit_dates.append(date_obj)
 
         # DEBUG ALERT #
