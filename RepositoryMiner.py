@@ -4,6 +4,9 @@ from datetime import datetime
 from dateutil import parser
 import matplotlib.pyplot as plt
 import numpy as np
+import networkx as nx
+import string
+import numpy as np
 import locale
 
 
@@ -17,7 +20,7 @@ def main():
     repo_param = dict(
         pretty="full",
         format="JSON",
-        n="10"
+        n="100"
     )
 
     data_response = requests.get(repo_url, repo_param)
@@ -83,6 +86,31 @@ def main():
     # DEBUG ALERT #
     di, dj = debug_list[0]
     print(dev_matrix[di][dj])
+    # print(dev_matrix.shape)
+    # print(dev_matrix)
+
+    labels = {}
+    G = nx.Graph()
+    for i in range(0,dev_matrix.shape[1]):
+        G.add_node(i)
+
+    for node in G.nodes():
+        labels[node] = developers[node].strip("@chromium.org")
+
+    L = list()
+    for i in range(0, dev_matrix.shape[0]):
+        for j in range(0, dev_matrix.shape[1]):
+            if dev_matrix.item(i-1,j-1) == 1:
+                L.append(j)
+        for item1 in range(len(L)):
+            for item2 in range(len(L)):
+                G.add_edge(item1, item2)
+        del L[:]
+
+    pos=nx.spring_layout(G)
+    nx.draw(G, with_labels=False)
+    nx.draw_networkx_labels(G,pos,labels,font_size=16,font_color='r')
+    plt.show()
 
     end = commit_dates[0]
     start = commit_dates[-1]
