@@ -15,6 +15,8 @@ def main():
     # For larger dataset program may take long time.
     # For 94000 commit, it takes approximately 1 hour 15 minutes.
     # Program utilizes Gitiles API provided by Google to get git logs.
+    # A heads up: You should close plot windows after you analyze them
+    # in order to program to continue.
 
     # Repository log URL for API
     repo_url = "https://chromium.googlesource.com/chromium/src/+log/HEAD"
@@ -24,6 +26,8 @@ def main():
 
     # n is page size, 8000 page size equals 1 month data approximately.
     # Between 15-05-2016 and 07-04-2016. Contain nearly 94000 commits.
+    # I suggest you to test it with page size 1000 or less which contains
+    # nearly 5000 commits. With 1000 page size program executes in 10 minutes.
     repo_param = dict(
         pretty="full",
         format="JSON",  # Format for data type, it should be JSON.
@@ -126,7 +130,6 @@ def main():
     for node in graph.nodes():
         labels[node] = developers[node].replace("@chromium.org", "")
 
-    print(dev_matrix.shape[0], dev_matrix.shape[1])
     graph_list = list()
     for i in range(0, dev_matrix.shape[0]):
         for j in range(0, dev_matrix.shape[1]):
@@ -185,11 +188,12 @@ def main():
 
     plt.clf()
     plt.bar(range(len(developer_commit_frequency)), developer_commit_frequency.values(), align="center")
-    plt.xticks(range(len(developer_commit_frequency)), developer_commit_frequency.keys(), rotation="vertical", fontsize=8)
+    plt.xticks(range(len(developer_commit_frequency)), developer_commit_frequency.keys(),
+               rotation="vertical", fontsize=8)
     plt.title("Commit frequency per developer")
     plt.ylabel("Commits per hour")
     plt.subplots_adjust(bottom=0.30)
-    plt.savefig("top_developer_commit_chart.pdf")
+    plt.savefig("developer_commit_frequency_chart.pdf")
     # To show plot #
     plt.show()
 
@@ -197,6 +201,7 @@ def main():
     print(top_developer)
 
 
+# Parses file paths and returns it as list.
 def get_file_paths():
     file_path_data = open("file_paths.txt", "r")
     path_list = list()
