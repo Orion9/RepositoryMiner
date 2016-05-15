@@ -79,7 +79,7 @@ def main():
 
             developer_commit_count[commit_data_json["author"]["email"]] += 1
             total_commits += 1
-
+    print("Parsed", total_commits, "commits successfully!")
     # DEBUG ALERT #
     di, dj = debug_list[0]
     print(dev_matrix[di][dj])
@@ -108,25 +108,26 @@ def main():
     pos = nx.spring_layout(graph)
     # nx.draw(graph, with_labels=False)
 
-    print("Drawing commit-developer chart...")
     nx.draw_networkx_nodes(graph, pos, node_color='r', node_size=50, alpha=0.8)
     nx.draw_networkx_edges(graph, pos, width=1.0, alpha=0.5)
     nx.draw_networkx_labels(graph, pos, labels, font_size=11, font_color='black')
-    plt.show()
+    plt.savefig("dev_commit_relation_graph.png")
+    # plt.show()
 
     end = commit_dates[0]
     start = commit_dates[-1]
     date_spawn = end - start
 
+    plt.clf()
     print("Drawing commit-developer chart...")
     plt.bar(range(len(developer_commit_count)), developer_commit_count.values(), align="center")
     plt.xticks(range(len(developer_commit_count)), developer_commit_count.keys(), rotation="vertical", fontsize=8)
     plt.title("Commits per developer")
     plt.ylabel("Commits")
     plt.subplots_adjust(bottom=0.30)
-    plt.savefig("developer_commit_chart.png")
+    # plt.savefig("developer_commit_chart.png")
     # To show plot #
-    # plt.show()
+    plt.show()
 
     for dev in developer_commit_count:
         commit_count = developer_commit_count[dev]
