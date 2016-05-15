@@ -4,6 +4,8 @@ from dateutil import parser
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import operator
+
 
 # TODO Delete debug alerts
 
@@ -15,7 +17,7 @@ def main():
     repo_param = dict(
         pretty="full",
         format="JSON",
-        n="100"
+        n="10"
     )
 
     data_response = requests.get(repo_url, repo_param)
@@ -137,6 +139,19 @@ def main():
 
         if commit_ratio > 79:
             top_developer.append(dev)
+
+    sorted_x = sorted(developer_commit_count.items(), key=operator.itemgetter(1), reverse=True)
+
+    eighty = total_commits * 80 / 100
+    tita = 0
+    count = 0
+
+    for sorted_dev in sorted_x:
+        top_developer.append(sorted_dev)
+        tita = tita + sorted_dev[1]
+        count = count + 1
+        if tita >= eighty:
+            break
 
     print(developer_commit_frequency)
     print(top_developer)
