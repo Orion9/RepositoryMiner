@@ -37,7 +37,8 @@ def main():
     print("Getting developer list...")
 
     for json_data in data_json["log"]:
-        developers.append(json_data["author"]["email"])
+        if json_data["author"]["email"] not in developers:
+            developers.append(json_data["author"]["email"])
 
     i = len(path_list)
     j = len(developers)
@@ -88,19 +89,34 @@ def main():
     # print(dev_matrix.shape)
     # print(dev_matrix)
 
+    print("Identifiying top developers...")
+    sorted_x = sorted(developer_commit_count.items(), key=operator.itemgetter(1), reverse=True)
+
+    eighty = total_commits * 80 / 100
+    tita = 0
+    count = 0
+
+    for sorted_dev in sorted_x:
+        top_developer.append(sorted_dev[0])
+        tita = tita + sorted_dev[1]
+        count += 1
+        if tita >= eighty:
+            break
+
     print("Drawing commit-developer graph...")
     labels = {}
     graph = nx.Graph()
     for i in range(0, dev_matrix.shape[1]):
-        graph.add_node(i)
+        if developers[i] in top_developer:
+            graph.add_node(i)
 
     for node in graph.nodes():
-        labels[node] = developers[node].replace("@chromium.org", "")
+        labels[node], tmp = developers[node].split("@")
 
     graph_list = list()
     for i in range(0, dev_matrix.shape[0]):
         for j in range(0, dev_matrix.shape[1]):
-            if dev_matrix.item(i - 1, j - 1) == 1:
+            if dev_matrix[i][j] == 1:
                 graph_list.append(j)
         for item1 in range(len(graph_list)):
             for item2 in range(len(graph_list)):
@@ -127,31 +143,12 @@ def main():
     plt.title("Commits per developer")
     plt.ylabel("Commits")
     plt.subplots_adjust(bottom=0.30)
-    # plt.savefig("developer_commit_chart.png")
+    plt.savefig("developer_commit_chart.png")
     # To show plot #
-    plt.show()
+    # plt.show()
 
     for dev in developer_commit_count:
-        commit_count = developer_commit_count[dev]
-        commit_ratio = (commit_count / total_commits) * 100
-
-        developer_commit_frequency[dev] = (date_spawn.total_seconds() / 3600.0) / developer_commit_count[dev]
-
-        if commit_ratio > 79:
-            top_developer.append(dev)
-
-    sorted_x = sorted(developer_commit_count.items(), key=operator.itemgetter(1), reverse=True)
-
-    eighty = total_commits * 80 / 100
-    tita = 0
-    count = 0
-
-    for sorted_dev in sorted_x:
-        top_developer.append(sorted_dev)
-        tita = tita + sorted_dev[1]
-        count = count + 1
-        if tita >= eighty:
-            break
+        developer_commit_frequency[dev] = developer_commit_count[dev] / (date_spawn.total_seconds() / 3600.0)
 
     print(developer_commit_frequency)
     print(top_developer)
