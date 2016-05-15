@@ -1,14 +1,9 @@
 import requests
 import json
-from datetime import datetime
 from dateutil import parser
 import matplotlib.pyplot as plt
-import numpy as np
 import networkx as nx
-import string
 import numpy as np
-import locale
-
 
 # TODO Delete debug alerts
 
@@ -34,10 +29,10 @@ def main():
     top_developer = list()
     developers = list()
 
+    print("Getting file list...")
     path_list = get_file_paths()
 
-    i = 1
-    total_commits = 0
+    print("Getting developer list...")
 
     for json_data in data_json["log"]:
         developers.append(json_data["author"]["email"])
@@ -49,6 +44,10 @@ def main():
     # DEBUG ALERT #
     debug_list = list()
 
+    print("Parsing commits...")
+    print("Warning: Program may seem frozen while parsing, but it is not!")
+    print("It just needs time, and some love...")
+    total_commits = 0
     for json_data in data_json["log"]:
         commit_url = init_commit_url + json_data["commit"]
         commit_param = dict(
@@ -81,47 +80,51 @@ def main():
             developer_commit_count[commit_data_json["author"]["email"]] += 1
             total_commits += 1
 
-        i += 1
-
     # DEBUG ALERT #
     di, dj = debug_list[0]
     print(dev_matrix[di][dj])
     # print(dev_matrix.shape)
     # print(dev_matrix)
 
+    print("Drawing commit-developer graph...")
     labels = {}
-    G = nx.Graph()
-    for i in range(0,dev_matrix.shape[1]):
-        G.add_node(i)
+    graph = nx.Graph()
+    for i in range(0, dev_matrix.shape[1]):
+        graph.add_node(i)
 
-    for node in G.nodes():
-        labels[node] = developers[node].strip("@chromium.org")
+    for node in graph.nodes():
+        labels[node] = developers[node].replace("@chromium.org", "")
 
-    L = list()
+    graph_list = list()
     for i in range(0, dev_matrix.shape[0]):
         for j in range(0, dev_matrix.shape[1]):
-            if dev_matrix.item(i-1,j-1) == 1:
-                L.append(j)
-        for item1 in range(len(L)):
-            for item2 in range(len(L)):
-                G.add_edge(item1, item2)
-        del L[:]
+            if dev_matrix.item(i - 1, j - 1) == 1:
+                graph_list.append(j)
+        for item1 in range(len(graph_list)):
+            for item2 in range(len(graph_list)):
+                graph.add_edge(item1, item2)
+        del graph_list[:]
 
-    pos=nx.spring_layout(G)
-    nx.draw(G, with_labels=False)
-    nx.draw_networkx_labels(G,pos,labels,font_size=16,font_color='r')
+    pos = nx.spring_layout(graph)
+    # nx.draw(graph, with_labels=False)
+
+    print("Drawing commit-developer chart...")
+    nx.draw_networkx_nodes(graph, pos, node_color='r', node_size=50, alpha=0.8)
+    nx.draw_networkx_edges(graph, pos, width=1.0, alpha=0.5)
+    nx.draw_networkx_labels(graph, pos, labels, font_size=11, font_color='black')
     plt.show()
 
     end = commit_dates[0]
     start = commit_dates[-1]
     date_spawn = end - start
 
+    print("Drawing commit-developer chart...")
     plt.bar(range(len(developer_commit_count)), developer_commit_count.values(), align="center")
-    plt.xticks(range(len(developer_commit_count)), developer_commit_count.keys(), rotation="vertical")
+    plt.xticks(range(len(developer_commit_count)), developer_commit_count.keys(), rotation="vertical", fontsize=8)
     plt.title("Commits per developer")
     plt.ylabel("Commits")
     plt.subplots_adjust(bottom=0.30)
-
+    plt.savefig("developer_commit_chart.png")
     # To show plot #
     # plt.show()
 
